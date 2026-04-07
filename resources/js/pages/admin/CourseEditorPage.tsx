@@ -12,7 +12,6 @@ import {
   Plus,
   Trash2,
   Pencil,
-  X,
   Check,
 } from "lucide-react"
 import { toast } from "sonner"
