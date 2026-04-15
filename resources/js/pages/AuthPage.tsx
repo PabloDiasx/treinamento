@@ -4,7 +4,7 @@ import { useForm } from "react-hook-form"
 import { z } from "zod"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { motion, AnimatePresence } from "framer-motion"
-import { Mail, Lock, User, Eye, EyeOff, GraduationCap } from "lucide-react"
+import { Mail, Lock, User, Eye, EyeOff } from "lucide-react"
 import { toast } from "sonner"
 import { useAuth } from "@/hooks/useAuth"
 import { cn } from "@/lib/utils"
@@ -341,16 +341,17 @@ export default function AuthPage() {
 
         {/* Content */}
         <div className="relative z-10 flex flex-col items-center px-12 text-center">
-          <div className="mb-6 flex h-20 w-20 items-center justify-center rounded-2xl bg-primary/20 backdrop-blur-sm">
-            <GraduationCap className="h-10 w-10 text-primary" />
-          </div>
-          <h1 className="text-4xl font-bold text-foreground">Treinamento</h1>
-          <p className="mt-4 max-w-md text-lg text-muted-foreground">
+          <img
+            src={`${import.meta.env.VITE_BASE_PATH || ""}/logo.png`}
+            alt="Live Universe"
+            className="h-64 w-auto object-contain"
+          />
+          <p className="-mt-12 max-w-md text-lg text-muted-foreground">
             Sua plataforma de cursos e treinamentos
           </p>
 
           {/* Feature highlights */}
-          <div className="mt-12 space-y-4 text-left">
+          <div className="mt-10 space-y-3 text-left">
             {[
               "Cursos completos com video e material de apoio",
               "Acompanhe seu progresso em tempo real",
@@ -358,9 +359,7 @@ export default function AuthPage() {
               "Assistente IA para tirar suas duvidas",
             ].map((text, i) => (
               <div key={i} className="flex items-center gap-3">
-                <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-primary/20">
-                  <div className="h-2 w-2 rounded-full bg-primary" />
-                </div>
+                <div className="h-1 w-1 shrink-0 rounded-full bg-muted-foreground/50" />
                 <span className="text-sm text-muted-foreground">{text}</span>
               </div>
             ))}
@@ -372,10 +371,8 @@ export default function AuthPage() {
       <div className="relative z-10 flex w-full flex-col items-center justify-center px-6 py-12 lg:w-[480px] lg:shrink-0 lg:border-l lg:border-border lg:bg-card/50">
         {/* Mobile logo */}
         <div className="mb-8 flex items-center gap-3 lg:hidden">
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/20">
-            <GraduationCap className="h-5 w-5 text-primary" />
-          </div>
-          <span className="text-xl font-bold text-foreground">Treinamento</span>
+          <img src={`${import.meta.env.VITE_BASE_PATH || ""}/logo.png`} alt="Live Universe" className="h-10 w-auto object-contain" />
+          <span className="text-xl font-bold text-foreground">Live Universe</span>
         </div>
 
         <div className="w-full max-w-sm">

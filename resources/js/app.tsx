@@ -78,7 +78,7 @@ function RootRedirect() {
 export default function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <BrowserRouter basename="/treinamento/public">
+      <BrowserRouter basename={import.meta.env.VITE_BASE_PATH || ""}>
         <AuthProvider>
           <Routes>
             <Route path="/" element={<RootRedirect />} />
