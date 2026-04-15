@@ -349,21 +349,6 @@ export default function AuthPage() {
           <p className="-mt-12 max-w-md text-lg text-muted-foreground">
             Sua plataforma de cursos e treinamentos
           </p>
-
-          {/* Feature highlights */}
-          <div className="mt-10 space-y-3 text-left">
-            {[
-              "Cursos completos com video e material de apoio",
-              "Acompanhe seu progresso em tempo real",
-              "Certificados ao concluir seus treinamentos",
-              "Assistente IA para tirar suas duvidas",
-            ].map((text, i) => (
-              <div key={i} className="flex items-center gap-3">
-                <div className="h-1 w-1 shrink-0 rounded-full bg-muted-foreground/50" />
-                <span className="text-sm text-muted-foreground">{text}</span>
-              </div>
-            ))}
-          </div>
         </div>
       </div>
 
