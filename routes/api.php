@@ -67,6 +67,9 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/certificates', [CertificateController::class, 'index']);
     Route::get('/certificates/{certificate:certificate_code}/download', [CertificateController::class, 'download']);
 
+    // Noticias
+    Route::get('/news', [\App\Http\Controllers\Api\NewsController::class, 'index']);
+
     // Notificacoes
     Route::get('/notifications', [NotificationController::class, 'index']);
     Route::put('/notifications/{notification}/read', [NotificationController::class, 'markRead']);
@@ -78,6 +81,7 @@ Route::middleware('auth:sanctum')->group(function () {
 
         Route::apiResource('courses', \App\Http\Controllers\Api\Admin\CourseController::class);
         Route::post('/courses/{course}/upload-video', [\App\Http\Controllers\Api\Admin\CourseController::class, 'uploadVideo']);
+        Route::post('/courses/{course}/duplicate', [\App\Http\Controllers\Api\Admin\CourseController::class, 'duplicate']);
 
         // Course videos
         Route::get('/courses/{course}/videos', [\App\Http\Controllers\Api\Admin\CourseVideoController::class, 'index']);
@@ -87,6 +91,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('/videos/{video}/upload', [\App\Http\Controllers\Api\Admin\CourseVideoController::class, 'uploadFile']);
 
         Route::apiResource('categories', \App\Http\Controllers\Api\Admin\CategoryController::class);
+        Route::apiResource('news', \App\Http\Controllers\Api\Admin\NewsController::class);
     });
 
     // ─── Apenas Admin ───────────────────────────────────

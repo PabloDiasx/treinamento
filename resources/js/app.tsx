@@ -8,6 +8,7 @@ import AdminDashboard from "@/pages/admin/AdminDashboard"
 import ManageCoursesPage from "@/pages/admin/ManageCoursesPage"
 import CourseEditorPage from "@/pages/admin/CourseEditorPage"
 import ManageCategoriesPage from "@/pages/admin/ManageCategoriesPage"
+import ManageNewsPage from "@/pages/admin/ManageNewsPage"
 import ManageUsersPage from "@/pages/admin/ManageUsersPage"
 import CourseCatalog from "@/pages/CourseCatalog"
 import CourseDetail from "@/pages/CourseDetail"
@@ -185,6 +186,14 @@ export default function App() {
               element={
                 <ProtectedRoute>
                   <ManageCategoriesPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/admin/news"
+              element={
+                <ProtectedRoute>
+                  <ManageNewsPage />
                 </ProtectedRoute>
               }
             />

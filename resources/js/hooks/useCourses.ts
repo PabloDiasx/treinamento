@@ -110,6 +110,24 @@ export function useUpdateCourse() {
   })
 }
 
+export function useDuplicateCourse() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: async ({ id, category_id, title }: { id: number; category_id: number; title?: string }) => {
+      const { data } = await apiClient.post<Course>(`/admin/courses/${id}/duplicate`, {
+        category_id,
+        title,
+      })
+      return data
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: courseKeys.adminLists() })
+      queryClient.invalidateQueries({ queryKey: courseKeys.lists() })
+    },
+  })
+}
+
 export function useDeleteCourse() {
   const queryClient = useQueryClient()
 

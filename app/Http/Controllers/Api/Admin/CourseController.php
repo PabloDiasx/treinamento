@@ -112,4 +112,43 @@ class CourseController extends Controller
 
         return response()->json(['message' => 'Curso removido com sucesso.']);
     }
+
+    /**
+     * Duplicate a course (with all its videos) into a target category.
+     */
+    public function duplicate(Request $request, Course $course): JsonResponse
+    {
+        $validated = $request->validate([
+            'category_id' => ['required', 'exists:categories,id'],
+            'title'       => ['nullable', 'string', 'max:255'],
+        ]);
+
+        $newTitle = $validated['title'] ?? ($course->title . ' (cópia)');
+
+        $baseSlug = Str::slug($newTitle);
+        $slug = $baseSlug;
+        $i = 2;
+        while (Course::where('slug', $slug)->exists()) {
+            $slug = $baseSlug . '-' . $i;
+            $i++;
+        }
+
+        $newCourse = $course->replicate(['published_at']);
+        $newCourse->title = $newTitle;
+        $newCourse->slug = $slug;
+        $newCourse->category_id = $validated['category_id'];
+        $newCourse->instructor_id = $request->user()->id;
+        $newCourse->published_at = $course->status === 'published' ? now() : null;
+        $newCourse->save();
+
+        foreach ($course->videos()->orderBy('sort_order')->get() as $video) {
+            $copy = $video->replicate();
+            $copy->course_id = $newCourse->id;
+            $copy->save();
+        }
+
+        $newCourse->load(['instructor:id,name', 'category:id,name']);
+
+        return response()->json($newCourse, 201);
+    }
 }

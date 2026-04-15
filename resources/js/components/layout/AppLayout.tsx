@@ -7,6 +7,7 @@ import {
   BookOpen,
   Users,
   FolderTree,
+  Newspaper,
   LogOut,
   Menu,
   X,
@@ -29,6 +30,7 @@ const adminLinks = [
   { to: "/admin", label: "Painel", icon: LayoutDashboard },
   { to: "/admin/courses", label: "Cursos", icon: BookOpen },
   { to: "/admin/categories", label: "Categorias", icon: FolderTree },
+  { to: "/admin/news", label: "Notícias", icon: Newspaper },
   { to: "/admin/users", label: "Usuarios", icon: Users },
 ]
 
