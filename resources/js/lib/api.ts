@@ -1,6 +1,6 @@
 import axios from "axios"
 
-const BASE = import.meta.env.VITE_API_BASE || "/treinamento/public"
+const BASE = import.meta.env.VITE_API_BASE ?? ""
 
 export const apiClient = axios.create({
   baseURL: `${BASE}/api`,
