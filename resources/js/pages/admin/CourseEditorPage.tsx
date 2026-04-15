@@ -394,7 +394,10 @@ export default function CourseEditorPage() {
 
           {/* Video list */}
           {videos && videos.length > 0 ? (
-            <div className="space-y-2">
+            <div
+              className="space-y-2 overflow-y-auto pr-1 [&::-webkit-scrollbar]:hidden"
+              style={{ maxHeight: "520px", scrollbarWidth: "none", msOverflowStyle: "none" }}
+            >
               {videos.map((v: CourseVideo) => (
                 <div
                   key={v.id}
