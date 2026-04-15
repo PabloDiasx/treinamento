@@ -66,6 +66,21 @@ export function useUpdateNews() {
   })
 }
 
+export function useUploadNewsImage() {
+  return useMutation({
+    mutationFn: async (file: File) => {
+      const formData = new FormData()
+      formData.append("image", file)
+      const { data } = await apiClient.post<{ url: string }>(
+        "/admin/news/upload-image",
+        formData,
+        { headers: { "Content-Type": "multipart/form-data" } },
+      )
+      return data.url
+    },
+  })
+}
+
 export function useDeleteNews() {
   const qc = useQueryClient()
   return useMutation({

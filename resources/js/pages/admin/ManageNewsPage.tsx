@@ -1,6 +1,6 @@
-import { useState } from "react"
+import { useRef, useState } from "react"
 import { motion, AnimatePresence } from "framer-motion"
-import { Plus, Pencil, Trash2, X, AlertTriangle, Newspaper, Save } from "lucide-react"
+import { Plus, Pencil, Trash2, X, AlertTriangle, Newspaper, Save, Upload, Image as ImageIcon } from "lucide-react"
 import { useForm } from "react-hook-form"
 import { toast } from "sonner"
 import AppLayout from "@/components/layout/AppLayout"
@@ -10,6 +10,7 @@ import {
   useCreateNews,
   useUpdateNews,
   useDeleteNews,
+  useUploadNewsImage,
   type NewsItem,
 } from "@/hooks/useNews"
 
@@ -26,6 +27,8 @@ export default function ManageNewsPage() {
   const createNews = useCreateNews()
   const updateNews = useUpdateNews()
   const deleteNews = useDeleteNews()
+  const uploadImage = useUploadNewsImage()
+  const fileInputRef = useRef<HTMLInputElement>(null)
 
   const [modalOpen, setModalOpen] = useState(false)
   const [editing, setEditing] = useState<NewsItem | null>(null)
@@ -35,6 +38,8 @@ export default function ManageNewsPage() {
     register,
     handleSubmit,
     reset,
+    setValue,
+    watch,
     formState: { errors, isSubmitting },
   } = useForm<NewsFormData>({
     defaultValues: {
@@ -243,12 +248,73 @@ export default function ManageNewsPage() {
                 </div>
 
                 <div>
-                  <label className="mb-1 block text-sm font-medium text-gray-300">URL da Imagem (opcional)</label>
-                  <input
-                    {...register("image_url")}
-                    className="w-full rounded-lg border border-white/10 bg-white/5 px-3 py-2.5 text-sm text-white outline-none focus:border-purple-500"
-                    placeholder="https://..."
-                  />
+                  <label className="mb-1 block text-sm font-medium text-gray-300">Imagem (opcional)</label>
+                  {watch("image_url") ? (
+                    <div className="relative overflow-hidden rounded-lg border border-white/10" style={{ backgroundColor: "#0a0a0f" }}>
+                      <img
+                        src={watch("image_url")}
+                        alt="Preview"
+                        className="h-48 w-full object-cover"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setValue("image_url", "")}
+                        className="absolute right-2 top-2 flex h-8 w-8 items-center justify-center rounded-lg bg-black/60 text-white hover:bg-black/80"
+                      >
+                        <X className="h-4 w-4" />
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="flex flex-col gap-2">
+                      <button
+                        type="button"
+                        onClick={() => fileInputRef.current?.click()}
+                        disabled={uploadImage.isPending}
+                        className="flex flex-col items-center justify-center gap-2 rounded-lg border-2 border-dashed border-white/10 py-8 text-sm text-gray-400 transition-colors hover:border-purple-500/40 hover:bg-white/5 disabled:opacity-50"
+                        style={{ backgroundColor: "#0a0a0f" }}
+                      >
+                        {uploadImage.isPending ? (
+                          <>
+                            <Upload className="h-6 w-6 animate-pulse" />
+                            <span>Enviando...</span>
+                          </>
+                        ) : (
+                          <>
+                            <ImageIcon className="h-6 w-6" />
+                            <span>Clique para enviar uma imagem</span>
+                            <span className="text-xs text-gray-500">JPG, PNG, WEBP, GIF — até 8MB</span>
+                          </>
+                        )}
+                      </button>
+                      <input
+                        ref={fileInputRef}
+                        type="file"
+                        accept="image/*"
+                        className="hidden"
+                        onChange={async (e) => {
+                          const file = e.target.files?.[0]
+                          if (!file) return
+                          try {
+                            const url = await uploadImage.mutateAsync(file)
+                            setValue("image_url", url)
+                            toast.success("Imagem enviada!")
+                          } catch {
+                            toast.error("Erro ao enviar imagem.")
+                          } finally {
+                            if (fileInputRef.current) fileInputRef.current.value = ""
+                          }
+                        }}
+                      />
+                      <details className="text-xs text-gray-500">
+                        <summary className="cursor-pointer hover:text-gray-400">Ou colar URL externa</summary>
+                        <input
+                          {...register("image_url")}
+                          className="mt-2 w-full rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-sm text-white outline-none focus:border-purple-500"
+                          placeholder="https://..."
+                        />
+                      </details>
+                    </div>
+                  )}
                 </div>
 
                 <div className="grid gap-4 sm:grid-cols-2">

@@ -91,6 +91,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('/videos/{video}/upload', [\App\Http\Controllers\Api\Admin\CourseVideoController::class, 'uploadFile']);
 
         Route::apiResource('categories', \App\Http\Controllers\Api\Admin\CategoryController::class);
+        Route::post('/news/upload-image', [\App\Http\Controllers\Api\Admin\NewsController::class, 'uploadImage']);
         Route::apiResource('news', \App\Http\Controllers\Api\Admin\NewsController::class);
     });
 
