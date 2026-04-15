@@ -44,6 +44,16 @@ export function useUpdateCourseVideo(courseId: number) {
   })
 }
 
+export function useReorderCourseVideos(courseId: number) {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: async (order: number[]) => {
+      await apiClient.put(`/admin/courses/${courseId}/videos/reorder`, { order })
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: videoKeys.all(courseId) }),
+  })
+}
+
 export function useDeleteCourseVideo(courseId: number) {
   const qc = useQueryClient()
   return useMutation({

@@ -86,6 +86,7 @@ Route::middleware('auth:sanctum')->group(function () {
         // Course videos
         Route::get('/courses/{course}/videos', [\App\Http\Controllers\Api\Admin\CourseVideoController::class, 'index']);
         Route::post('/courses/{course}/videos', [\App\Http\Controllers\Api\Admin\CourseVideoController::class, 'store']);
+        Route::put('/courses/{course}/videos/reorder', [\App\Http\Controllers\Api\Admin\CourseVideoController::class, 'reorder']);
         Route::put('/videos/{video}', [\App\Http\Controllers\Api\Admin\CourseVideoController::class, 'update']);
         Route::delete('/videos/{video}', [\App\Http\Controllers\Api\Admin\CourseVideoController::class, 'destroy']);
         Route::post('/videos/{video}/upload', [\App\Http\Controllers\Api\Admin\CourseVideoController::class, 'uploadFile']);

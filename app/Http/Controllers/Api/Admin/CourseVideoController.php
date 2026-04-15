@@ -84,6 +84,22 @@ class CourseVideoController extends Controller
         return response()->json(['message' => 'Vídeo removido.']);
     }
 
+    public function reorder(Request $request, Course $course): JsonResponse
+    {
+        $validated = $request->validate([
+            'order'   => ['required', 'array'],
+            'order.*' => ['integer', 'exists:course_videos,id'],
+        ]);
+
+        foreach ($validated['order'] as $index => $videoId) {
+            CourseVideo::where('id', $videoId)
+                ->where('course_id', $course->id)
+                ->update(['sort_order' => $index]);
+        }
+
+        return response()->json(['message' => 'Ordem atualizada.']);
+    }
+
     public function uploadFile(Request $request, CourseVideo $video): JsonResponse
     {
         $request->validate([
