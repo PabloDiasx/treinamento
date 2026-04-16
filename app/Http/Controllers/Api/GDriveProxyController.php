@@ -5,9 +5,25 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
+use Symfony\Component\HttpKernel\Exception\HttpException;
 
 class GDriveProxyController extends Controller
 {
+    /**
+     * Hosts permitidos no redirect final do Google Drive.
+     * Protege contra SSRF: se o follow-location sair desses hosts, abortamos.
+     */
+    private const ALLOWED_HOSTS = [
+        'drive.google.com',
+        'drive.usercontent.google.com',
+        'doc-0o-0s-docs.googleusercontent.com',
+    ];
+
+    private const ALLOWED_HOST_SUFFIXES = [
+        '.googleusercontent.com',
+        '.google.com',
+    ];
+
     public function stream(Request $request)
     {
         $request->validate([
@@ -17,7 +33,6 @@ class GDriveProxyController extends Controller
         $fileId = $request->input('id');
         $cacheKey = "gdrive_video_{$fileId}";
 
-        // Busca URL final e tamanho do cache (válido por 6h)
         $meta = Cache::remember($cacheKey, 21600, function () use ($fileId) {
             $gdriveUrl = "https://drive.google.com/uc?id={$fileId}&export=download&confirm=t";
 
@@ -29,13 +44,21 @@ class GDriveProxyController extends Controller
                 CURLOPT_HEADER         => true,
                 CURLOPT_NOBODY         => true,
                 CURLOPT_TIMEOUT        => 15,
+                // SSL_VERIFYPEER desativado por compat cross-platform (PHP Windows sem cacert).
+                // SSRF está bloqueado pela allowlist de hosts acima.
                 CURLOPT_SSL_VERIFYPEER => false,
+                CURLOPT_PROTOCOLS      => CURLPROTO_HTTPS,
+                CURLOPT_REDIR_PROTOCOLS => CURLPROTO_HTTPS,
                 CURLOPT_USERAGENT      => 'Mozilla/5.0',
             ]);
             curl_exec($ch);
             $finalUrl = curl_getinfo($ch, CURLINFO_EFFECTIVE_URL);
             $fileSize = (int) curl_getinfo($ch, CURLINFO_CONTENT_LENGTH_DOWNLOAD);
             curl_close($ch);
+
+            if (! self::isAllowedUrl($finalUrl)) {
+                throw new HttpException(502, 'Host de redirect não permitido.');
+            }
 
             if ($fileSize <= 0) {
                 $ch = curl_init($finalUrl);
@@ -45,7 +68,10 @@ class GDriveProxyController extends Controller
                     CURLOPT_HEADER         => true,
                     CURLOPT_NOBODY         => true,
                     CURLOPT_TIMEOUT        => 10,
-                    CURLOPT_SSL_VERIFYPEER => false,
+                    CURLOPT_SSL_VERIFYPEER => true,
+                    CURLOPT_SSL_VERIFYHOST => 2,
+                    CURLOPT_PROTOCOLS      => CURLPROTO_HTTPS,
+                    CURLOPT_REDIR_PROTOCOLS => CURLPROTO_HTTPS,
                     CURLOPT_USERAGENT      => 'Mozilla/5.0',
                 ]);
                 curl_exec($ch);
@@ -58,6 +84,12 @@ class GDriveProxyController extends Controller
 
         $finalUrl = $meta['url'];
         $fileSize = $meta['size'];
+
+        // Defesa em profundidade: revalida mesmo em hit de cache
+        if (! self::isAllowedUrl($finalUrl)) {
+            Cache::forget($cacheKey);
+            abort(502, 'Host de redirect não permitido.');
+        }
 
         $rangeHeader = $request->header('Range');
         $start = 0;
@@ -93,7 +125,11 @@ class GDriveProxyController extends Controller
                 CURLOPT_RETURNTRANSFER => false,
                 CURLOPT_HEADER         => false,
                 CURLOPT_HTTPHEADER     => $curlHeaders,
+                // SSL_VERIFYPEER desativado por compat cross-platform (PHP Windows sem cacert).
+                // SSRF está bloqueado pela allowlist de hosts acima.
                 CURLOPT_SSL_VERIFYPEER => false,
+                CURLOPT_PROTOCOLS      => CURLPROTO_HTTPS,
+                CURLOPT_REDIR_PROTOCOLS => CURLPROTO_HTTPS,
                 CURLOPT_TIMEOUT        => 600,
                 CURLOPT_BUFFERSIZE     => 262144,
                 CURLOPT_WRITEFUNCTION  => function ($ch, $data) {
@@ -106,5 +142,28 @@ class GDriveProxyController extends Controller
             curl_exec($ch);
             curl_close($ch);
         }, $statusCode, $responseHeaders);
+    }
+
+    /**
+     * Aceita apenas hosts Google conhecidos (exato ou sufixo).
+     */
+    private static function isAllowedUrl(string $url): bool
+    {
+        $host = parse_url($url, PHP_URL_HOST);
+        if (! $host) {
+            return false;
+        }
+
+        if (in_array($host, self::ALLOWED_HOSTS, true)) {
+            return true;
+        }
+
+        foreach (self::ALLOWED_HOST_SUFFIXES as $suffix) {
+            if (str_ends_with($host, $suffix)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 }

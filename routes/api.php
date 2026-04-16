@@ -25,9 +25,6 @@ Route::post('/register', [RegisterController::class, 'register']);
 Route::post('/forgot-password', [ForgotPasswordController::class, 'sendResetLink']);
 Route::post('/reset-password', [ResetPasswordController::class, 'reset']);
 
-// ─── Google Drive video proxy (sem auth para o player funcionar) ───
-Route::get('/gdrive-stream', [\App\Http\Controllers\Api\GDriveProxyController::class, 'stream']);
-
 // ─── Autenticadas ───────────────────────────────────────
 Route::middleware('auth:sanctum')->group(function () {
     // Auth
@@ -35,6 +32,9 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/user', [UserController::class, 'me']);
     Route::put('/user/profile', [UserController::class, 'updateProfile']);
     Route::put('/user/password', [UserController::class, 'updatePassword']);
+
+    // Google Drive video proxy (autenticado — <video> envia cookie de sessão)
+    Route::get('/gdrive-stream', [\App\Http\Controllers\Api\GDriveProxyController::class, 'stream']);
 
     // Dashboard
     Route::get('/dashboard', [DashboardController::class, 'index']);

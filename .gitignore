@@ -3,6 +3,7 @@
 /public/build
 /public/hot
 /public/storage
+/public/uploads
 /storage/*.key
 /storage/logs
 /vendor
@@ -26,3 +27,4 @@ cookies.txt
 *.key
 *.pfx
 *.p12
+test.bat
