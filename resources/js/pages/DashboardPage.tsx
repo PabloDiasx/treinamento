@@ -85,6 +85,8 @@ export default function DashboardPage() {
                   <img
                     src={n.image_url}
                     alt={n.title}
+                    loading="lazy"
+                    decoding="async"
                     className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
                   />
                 ) : (
@@ -140,6 +142,8 @@ export default function DashboardPage() {
                   <img
                     src={selected.image_url}
                     alt={selected.title}
+                    loading="eager"
+                    decoding="async"
                     className="aspect-[16/9] w-full object-cover"
                   />
                 )}

@@ -152,6 +152,8 @@ function VideoModal({
                 key={video.id}
                 controls
                 autoPlay
+                preload="metadata"
+                playsInline
                 className="h-full w-full max-h-full max-w-full"
                 style={{ backgroundColor: "#000" }}
               >

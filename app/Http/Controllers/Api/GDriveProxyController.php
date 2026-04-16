@@ -66,7 +66,8 @@ class GDriveProxyController extends Controller
         $responseHeaders = [
             'Content-Type'  => 'video/mp4',
             'Accept-Ranges' => 'bytes',
-            'Cache-Control' => 'public, max-age=86400',
+            'Cache-Control' => 'public, max-age=604800, immutable',
+            'X-Content-Type-Options' => 'nosniff',
         ];
 
         if ($rangeHeader && $fileSize > 0 && preg_match('/bytes=(\d+)-(\d*)/', $rangeHeader, $m)) {
@@ -94,7 +95,7 @@ class GDriveProxyController extends Controller
                 CURLOPT_HTTPHEADER     => $curlHeaders,
                 CURLOPT_SSL_VERIFYPEER => false,
                 CURLOPT_TIMEOUT        => 600,
-                CURLOPT_BUFFERSIZE     => 131072,
+                CURLOPT_BUFFERSIZE     => 262144,
                 CURLOPT_WRITEFUNCTION  => function ($ch, $data) {
                     echo $data;
                     if (ob_get_level() > 0) ob_flush();

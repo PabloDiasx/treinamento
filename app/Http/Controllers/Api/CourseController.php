@@ -15,6 +15,11 @@ class CourseController extends Controller
     public function index(Request $request): JsonResponse
     {
         $query = Course::published()
+            ->select([
+                'id', 'title', 'slug', 'short_description', 'thumbnail_path',
+                'status', 'difficulty', 'is_featured', 'published_at',
+                'instructor_id', 'category_id', 'created_at',
+            ])
             ->with(['instructor:id,name', 'category:id,name,slug,color'])
             ->withCount('enrollments');
 
@@ -39,7 +44,7 @@ class CourseController extends Controller
         $course->load([
             'instructor:id,name',
             'category:id,name,slug,color',
-            'videos',
+            'videos' => fn ($q) => $q->orderBy('sort_order'),
         ]);
 
         return response()->json($course);

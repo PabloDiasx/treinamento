@@ -24,6 +24,10 @@ class Category extends Model
         static::addGlobalScope('ordered', function ($query) {
             $query->orderBy('sort_order');
         });
+
+        $flush = fn () => \Illuminate\Support\Facades\Cache::forget('categories:public');
+        static::saved($flush);
+        static::deleted($flush);
     }
 
     // -------------------------------------------------------

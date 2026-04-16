@@ -21,4 +21,11 @@ class News extends Model
         'is_published' => 'boolean',
         'published_at' => 'datetime',
     ];
+
+    protected static function booted(): void
+    {
+        $flush = fn () => \Illuminate\Support\Facades\Cache::forget('news:public');
+        static::saved($flush);
+        static::deleted($flush);
+    }
 }
