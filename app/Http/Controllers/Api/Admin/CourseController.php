@@ -3,6 +3,8 @@
 namespace App\Http\Controllers\Api\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Admin\StoreCourseRequest;
+use App\Http\Requests\Admin\UpdateCourseRequest;
 use App\Models\Course;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -19,21 +21,9 @@ class CourseController extends Controller
         return response()->json($courses);
     }
 
-    public function store(Request $request): JsonResponse
+    public function store(StoreCourseRequest $request): JsonResponse
     {
-        $validated = $request->validate([
-            'title'             => ['required', 'string', 'max:255'],
-            'slug'              => ['required', 'string', 'max:255', 'unique:courses,slug'],
-            'category_id'       => ['required', 'exists:categories,id'],
-            'description'       => ['nullable', 'string'],
-            'short_description' => ['nullable', 'string', 'max:500'],
-            'difficulty'        => ['nullable', 'string'],
-            'estimated_hours'   => ['nullable', 'numeric', 'min:0'],
-            'status'            => ['nullable', 'string', 'in:draft,published,archived'],
-            'is_featured'       => ['nullable'],
-            'video_url'         => ['nullable', 'string', 'max:500'],
-            'video_source'      => ['nullable', 'string', 'in:local,youtube,vimeo,external'],
-        ]);
+        $validated = $request->validated();
 
         $validated['instructor_id'] = $request->user()->id;
         $validated['is_featured'] = filter_var($validated['is_featured'] ?? false, FILTER_VALIDATE_BOOLEAN);
@@ -57,21 +47,9 @@ class CourseController extends Controller
         return response()->json($course);
     }
 
-    public function update(Request $request, Course $course): JsonResponse
+    public function update(UpdateCourseRequest $request, Course $course): JsonResponse
     {
-        $validated = $request->validate([
-            'title'             => ['sometimes', 'string', 'max:255'],
-            'slug'              => ['sometimes', 'string', 'max:255', 'unique:courses,slug,' . $course->id],
-            'category_id'       => ['sometimes', 'exists:categories,id'],
-            'description'       => ['nullable', 'string'],
-            'short_description' => ['nullable', 'string', 'max:500'],
-            'difficulty'        => ['nullable', 'string'],
-            'estimated_hours'   => ['nullable', 'numeric', 'min:0'],
-            'status'            => ['nullable', 'string', 'in:draft,published,archived'],
-            'is_featured'       => ['nullable'],
-            'video_url'         => ['nullable', 'string', 'max:500'],
-            'video_source'      => ['nullable', 'string', 'in:local,youtube,vimeo,external'],
-        ]);
+        $validated = $request->validated();
 
         $validated['is_featured'] = filter_var($validated['is_featured'] ?? $course->is_featured, FILTER_VALIDATE_BOOLEAN);
 

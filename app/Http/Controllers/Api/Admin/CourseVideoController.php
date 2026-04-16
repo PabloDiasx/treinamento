@@ -3,6 +3,8 @@
 namespace App\Http\Controllers\Api\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Admin\StoreCourseVideoRequest;
+use App\Http\Requests\Admin\UpdateCourseVideoRequest;
 use App\Models\Course;
 use App\Models\CourseVideo;
 use Illuminate\Http\JsonResponse;
@@ -16,15 +18,9 @@ class CourseVideoController extends Controller
         return response()->json($course->videos()->orderBy('sort_order')->get());
     }
 
-    public function store(Request $request, Course $course): JsonResponse
+    public function store(StoreCourseVideoRequest $request, Course $course): JsonResponse
     {
-        $validated = $request->validate([
-            'title'        => ['required', 'string', 'max:255'],
-            'video_url'    => ['nullable', 'string', 'max:500'],
-            'video_source' => ['nullable', 'string', 'in:youtube,vimeo,gdrive,local,external'],
-            'tag'          => ['nullable', 'string', 'in:todos,forca,hit,cardio,alongamento,sport'],
-            'sort_order'   => ['nullable', 'integer', 'min:0'],
-        ]);
+        $validated = $request->validated();
 
         // Auto-detect source from URL
         if (!empty($validated['video_url']) && empty($validated['video_source'])) {
@@ -49,15 +45,9 @@ class CourseVideoController extends Controller
         return response()->json($video, 201);
     }
 
-    public function update(Request $request, CourseVideo $video): JsonResponse
+    public function update(UpdateCourseVideoRequest $request, CourseVideo $video): JsonResponse
     {
-        $validated = $request->validate([
-            'title'        => ['sometimes', 'string', 'max:255'],
-            'video_url'    => ['nullable', 'string', 'max:500'],
-            'video_source' => ['nullable', 'string', 'in:youtube,vimeo,gdrive,local,external'],
-            'tag'          => ['nullable', 'string', 'in:todos,forca,hit,cardio,alongamento,sport'],
-            'sort_order'   => ['nullable', 'integer', 'min:0'],
-        ]);
+        $validated = $request->validated();
 
         if (!empty($validated['video_url']) && empty($validated['video_source'])) {
             $url = $validated['video_url'];

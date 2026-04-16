@@ -3,9 +3,10 @@
 namespace App\Http\Controllers\Api\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Admin\StoreCategoryRequest;
+use App\Http\Requests\Admin\UpdateCategoryRequest;
 use App\Models\Category;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
 
 class CategoryController extends Controller
 {
@@ -24,18 +25,9 @@ class CategoryController extends Controller
      *
      * @todo Add form request validation in Phase 2.
      */
-    public function store(Request $request): JsonResponse
+    public function store(StoreCategoryRequest $request): JsonResponse
     {
-        $validated = $request->validate([
-            'name'        => ['required', 'string', 'max:255'],
-            'slug'        => ['required', 'string', 'max:255', 'unique:categories,slug'],
-            'description' => ['nullable', 'string'],
-            'icon'        => ['nullable', 'string', 'max:100'],
-            'color'       => ['nullable', 'string', 'max:50'],
-            'sort_order'  => ['nullable', 'integer', 'min:0'],
-        ]);
-
-        $category = Category::create($validated);
+        $category = Category::create($request->validated());
 
         return response()->json($category, 201);
     }
@@ -55,18 +47,9 @@ class CategoryController extends Controller
      *
      * @todo Add form request validation in Phase 2.
      */
-    public function update(Request $request, Category $category): JsonResponse
+    public function update(UpdateCategoryRequest $request, Category $category): JsonResponse
     {
-        $validated = $request->validate([
-            'name'        => ['sometimes', 'string', 'max:255'],
-            'slug'        => ['sometimes', 'string', 'max:255', 'unique:categories,slug,' . $category->id],
-            'description' => ['nullable', 'string'],
-            'icon'        => ['nullable', 'string', 'max:100'],
-            'color'       => ['nullable', 'string', 'max:50'],
-            'sort_order'  => ['nullable', 'integer', 'min:0'],
-        ]);
-
-        $category->update($validated);
+        $category->update($request->validated());
 
         return response()->json($category->fresh());
     }
