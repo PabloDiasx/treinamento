@@ -22,18 +22,8 @@ class CourseVideoController extends Controller
     {
         $validated = $request->validated();
 
-        // Auto-detect source from URL
         if (!empty($validated['video_url']) && empty($validated['video_source'])) {
-            $url = $validated['video_url'];
-            if (str_contains($url, 'youtube.com') || str_contains($url, 'youtu.be')) {
-                $validated['video_source'] = 'youtube';
-            } elseif (str_contains($url, 'vimeo.com')) {
-                $validated['video_source'] = 'vimeo';
-            } elseif (str_contains($url, 'drive.google.com')) {
-                $validated['video_source'] = 'gdrive';
-            } else {
-                $validated['video_source'] = 'external';
-            }
+            $validated['video_source'] = CourseVideo::detectSource($validated['video_url']);
         }
 
         $validated['course_id'] = $course->id;
@@ -50,16 +40,7 @@ class CourseVideoController extends Controller
         $validated = $request->validated();
 
         if (!empty($validated['video_url']) && empty($validated['video_source'])) {
-            $url = $validated['video_url'];
-            if (str_contains($url, 'youtube.com') || str_contains($url, 'youtu.be')) {
-                $validated['video_source'] = 'youtube';
-            } elseif (str_contains($url, 'vimeo.com')) {
-                $validated['video_source'] = 'vimeo';
-            } elseif (str_contains($url, 'drive.google.com')) {
-                $validated['video_source'] = 'gdrive';
-            } else {
-                $validated['video_source'] = 'external';
-            }
+            $validated['video_source'] = CourseVideo::detectSource($validated['video_url']);
         }
 
         $video->update($validated);

@@ -21,4 +21,22 @@ class CourseVideo extends Model
     {
         return $this->belongsTo(Course::class);
     }
+
+    /**
+     * Detecta a origem do vídeo a partir da URL.
+     * Retorna um dos valores válidos: youtube, vimeo, gdrive, external.
+     */
+    public static function detectSource(?string $url): ?string
+    {
+        if (empty($url)) {
+            return null;
+        }
+
+        return match (true) {
+            str_contains($url, 'youtube.com'), str_contains($url, 'youtu.be') => 'youtube',
+            str_contains($url, 'vimeo.com')                                   => 'vimeo',
+            str_contains($url, 'drive.google.com')                            => 'gdrive',
+            default                                                            => 'external',
+        };
+    }
 }

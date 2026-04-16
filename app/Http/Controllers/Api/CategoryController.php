@@ -18,7 +18,8 @@ class CategoryController extends Controller
         $categories = Cache::remember('categories:public', 1800, function () {
             return Category::select('id', 'name', 'slug', 'description', 'icon', 'color', 'sort_order')
                 ->withCount('courses')
-                ->get();
+                ->get()
+                ->toArray();
         });
 
         return response()->json($categories);

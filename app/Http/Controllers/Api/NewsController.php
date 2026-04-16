@@ -15,7 +15,8 @@ class NewsController extends Controller
             return News::where('is_published', true)
                 ->orderBy('sort_order')
                 ->orderByDesc('created_at')
-                ->get();
+                ->get()
+                ->toArray();
         });
 
         return response()->json($news);
