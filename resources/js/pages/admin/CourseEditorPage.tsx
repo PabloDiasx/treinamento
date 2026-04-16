@@ -10,31 +10,12 @@ import {
   Video,
   Image,
   Plus,
-  Trash2,
-  Pencil,
-  Check,
-  GripVertical,
 } from "lucide-react"
-import {
-  DndContext,
-  closestCenter,
-  KeyboardSensor,
-  PointerSensor,
-  useSensor,
-  useSensors,
-  type DragEndEvent,
-} from "@dnd-kit/core"
-import {
-  arrayMove,
-  SortableContext,
-  sortableKeyboardCoordinates,
-  useSortable,
-  verticalListSortingStrategy,
-} from "@dnd-kit/sortable"
-import { CSS } from "@dnd-kit/utilities"
 import { toast } from "sonner"
 import AppLayout from "@/components/layout/AppLayout"
 import PageHeader from "@/components/layout/PageHeader"
+import SortableVideoList from "@/components/admin/SortableVideoList"
+import VideoForm from "@/components/admin/VideoForm"
 import {
   useAdminCourse,
   useCreateCourse,
@@ -43,21 +24,9 @@ import {
 import { useCategories } from "@/hooks/useCategories"
 import {
   useCourseVideos,
-  useCreateCourseVideo,
-  useUpdateCourseVideo,
   useDeleteCourseVideo,
-  useReorderCourseVideos,
 } from "@/hooks/useCourseVideos"
 import type { CourseVideo } from "@/types"
-
-const TAG_OPTIONS = [
-  { value: "todos", label: "Todos" },
-  { value: "forca", label: "Força" },
-  { value: "hit", label: "Hit" },
-  { value: "cardio", label: "Cardio" },
-  { value: "alongamento", label: "Alongamento" },
-  { value: "sport", label: "Sport" },
-]
 
 // ── Zod Schema ──
 const courseSchema = z.object({
@@ -81,227 +50,6 @@ function slugify(text: string): string {
     .replace(/[\u0300-\u036f]/g, "")
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/(^-|-$)+/g, "")
-}
-
-// ── Sortable Video Item ──
-function SortableVideoItem({
-  video,
-  onEdit,
-  onDelete,
-}: {
-  video: CourseVideo
-  onEdit: (v: CourseVideo) => void
-  onDelete: (id: number) => void
-}) {
-  const { attributes, listeners, setNodeRef, transform, transition, isDragging } =
-    useSortable({ id: video.id })
-
-  const style: React.CSSProperties = {
-    transform: CSS.Transform.toString(transform),
-    transition,
-    backgroundColor: isDragging ? "#1a1a24" : "#0a0a0f",
-    boxShadow: isDragging ? "0 10px 30px -5px rgba(0,0,0,0.5), 0 0 0 1px rgba(167,139,250,0.25)" : undefined,
-    zIndex: isDragging ? 50 : undefined,
-    opacity: isDragging ? 0.95 : 1,
-  }
-
-  return (
-    <div
-      ref={setNodeRef}
-      style={style}
-      className="flex items-center gap-3 rounded-lg px-3 py-3 transition-colors hover:bg-white/5"
-    >
-      <button
-        type="button"
-        {...attributes}
-        {...listeners}
-        className="flex-shrink-0 cursor-grab touch-none rounded p-1 text-gray-500 transition-colors hover:bg-white/5 hover:text-purple-300 active:cursor-grabbing"
-        aria-label="Arrastar para reordenar"
-      >
-        <GripVertical className="h-4 w-4" />
-      </button>
-      <Video className="h-4 w-4 text-purple-400 flex-shrink-0" />
-      <div className="flex-1 min-w-0">
-        <p className="text-sm font-medium text-white truncate">{video.title}</p>
-        <p className="text-xs text-gray-500 truncate">{video.video_url ?? "Sem link"}</p>
-      </div>
-      <span
-        className="flex-shrink-0 rounded-full px-2 py-0.5 text-[10px] font-medium uppercase"
-        style={{ backgroundColor: "#6d28d915", color: "#a78bfa" }}
-      >
-        {TAG_OPTIONS.find((t) => t.value === video.tag)?.label ?? video.tag}
-      </span>
-      <button
-        onClick={() => onEdit(video)}
-        className="flex-shrink-0 rounded p-1.5 text-gray-500 hover:bg-white/5 hover:text-white"
-      >
-        <Pencil className="h-3.5 w-3.5" />
-      </button>
-      <button
-        onClick={() => onDelete(video.id)}
-        className="flex-shrink-0 rounded p-1.5 text-gray-500 hover:bg-red-500/10 hover:text-red-400"
-      >
-        <Trash2 className="h-3.5 w-3.5" />
-      </button>
-    </div>
-  )
-}
-
-// ── Sortable Video List ──
-function SortableVideoList({
-  videos,
-  courseId,
-  onEdit,
-  onDelete,
-}: {
-  videos: CourseVideo[]
-  courseId: number
-  onEdit: (v: CourseVideo) => void
-  onDelete: (id: number) => void
-}) {
-  const reorder = useReorderCourseVideos(courseId)
-  const [items, setItems] = useState<CourseVideo[]>(videos)
-
-  useEffect(() => {
-    setItems(videos)
-  }, [videos])
-
-  const sensors = useSensors(
-    useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
-    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
-  )
-
-  const handleDragEnd = (event: DragEndEvent) => {
-    const { active, over } = event
-    if (!over || active.id === over.id) return
-
-    const oldIndex = items.findIndex((v) => v.id === active.id)
-    const newIndex = items.findIndex((v) => v.id === over.id)
-    if (oldIndex === -1 || newIndex === -1) return
-
-    const newItems = arrayMove(items, oldIndex, newIndex)
-    setItems(newItems)
-
-    reorder.mutate(newItems.map((v) => v.id), {
-      onError: () => {
-        toast.error("Erro ao reordenar.")
-        setItems(videos)
-      },
-    })
-  }
-
-  return (
-    <div
-      className="space-y-2 overflow-y-auto pr-1 [&::-webkit-scrollbar]:hidden"
-      style={{ maxHeight: "520px", scrollbarWidth: "none", msOverflowStyle: "none" }}
-    >
-      <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
-        <SortableContext items={items.map((v) => v.id)} strategy={verticalListSortingStrategy}>
-          {items.map((v) => (
-            <SortableVideoItem key={v.id} video={v} onEdit={onEdit} onDelete={onDelete} />
-          ))}
-        </SortableContext>
-      </DndContext>
-    </div>
-  )
-}
-
-// ── Add/Edit Video Form ──
-function VideoForm({
-  courseId,
-  editing,
-  onDone,
-}: {
-  courseId: number
-  editing: CourseVideo | null
-  onDone: () => void
-}) {
-  const [title, setTitle] = useState(editing?.title ?? "")
-  const [videoUrl, setVideoUrl] = useState(editing?.video_url ?? "")
-  const [tag, setTag] = useState(editing?.tag ?? "todos")
-  const [saving, setSaving] = useState(false)
-
-  const createVideo = useCreateCourseVideo(courseId)
-  const updateVideo = useUpdateCourseVideo(courseId)
-
-  async function handleSave() {
-    if (!title.trim()) {
-      toast.error("Título é obrigatório")
-      return
-    }
-    setSaving(true)
-    try {
-      if (editing) {
-        await updateVideo.mutateAsync({ id: editing.id, title, video_url: videoUrl, tag })
-      } else {
-        await createVideo.mutateAsync({ title, video_url: videoUrl, tag })
-      }
-      toast.success(editing ? "Vídeo atualizado!" : "Vídeo adicionado!")
-      onDone()
-    } catch {
-      toast.error("Erro ao salvar vídeo.")
-    } finally {
-      setSaving(false)
-    }
-  }
-
-  return (
-    <div
-      className="rounded-lg border border-purple-500/20 p-4 space-y-3"
-      style={{ backgroundColor: "#0a0a0f" }}
-    >
-      <div className="grid gap-3 sm:grid-cols-2">
-        <div>
-          <label className="mb-1 block text-xs font-medium text-gray-400">Título do vídeo</label>
-          <input
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-            className="w-full rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-sm text-white outline-none focus:border-purple-500"
-            placeholder="Ex: Agachamento no V8"
-          />
-        </div>
-        <div>
-          <label className="mb-1 block text-xs font-medium text-gray-400">Categoria</label>
-          <select
-            value={tag}
-            onChange={(e) => setTag(e.target.value)}
-            className="w-full rounded-lg border border-white/10 px-3 py-2 text-sm text-white outline-none focus:border-purple-500"
-            style={{ backgroundColor: "#0a0a0f" }}
-          >
-            {TAG_OPTIONS.map((t) => (
-              <option key={t.value} value={t.value} style={{ backgroundColor: "#16161d", color: "#e4e4e7" }}>{t.label}</option>
-            ))}
-          </select>
-        </div>
-      </div>
-      <div>
-        <label className="mb-1 block text-xs font-medium text-gray-400">Link do vídeo (YouTube/Vimeo)</label>
-        <input
-          value={videoUrl}
-          onChange={(e) => setVideoUrl(e.target.value)}
-          className="w-full rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-sm text-white outline-none focus:border-purple-500"
-          placeholder="https://www.youtube.com/watch?v=..."
-        />
-      </div>
-      <div className="flex gap-2">
-        <button
-          onClick={handleSave}
-          disabled={saving}
-          className="inline-flex items-center gap-1.5 rounded-lg px-4 py-2 text-xs font-medium text-white disabled:opacity-50"
-          style={{ backgroundColor: "#6d28d9" }}
-        >
-          <Check className="h-3.5 w-3.5" />
-          {saving ? "Salvando..." : "Salvar Vídeo"}
-        </button>
-        <button
-          onClick={onDone}
-          className="rounded-lg border border-white/10 px-4 py-2 text-xs font-medium text-gray-400 hover:bg-white/5"
-        >
-          Cancelar
-        </button>
-      </div>
-    </div>
-  )
 }
 
 // ── Main Page ──
